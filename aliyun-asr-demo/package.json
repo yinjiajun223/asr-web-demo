@@ -1,0 +1,22 @@
+{
+  "name": "typeless-web-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A simple Typeless-like smart voice input demo using React + Node + Alibaba Cloud Qwen-ASR Realtime.",
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w server\" \"npm run dev -w client\"",
+    "dev:server": "npm run dev -w server",
+    "dev:client": "npm run dev -w client",
+    "install:all": "npm install",
+    "lint": "npm run lint -w client",
+    "build": "npm run build -w client",
+    "start": "npm run start -w server"
+  },
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
