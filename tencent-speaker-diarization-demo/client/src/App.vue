@@ -134,11 +134,18 @@ function sentenceText(item: any) {
   return String(item.sentence || item.text || item.voice_text_str || item.final_text || '').trim();
 }
 
+function sentenceItems(data: any): any[] {
+  if (Array.isArray(data.sentences?.sentence_list)) return data.sentences.sentence_list;
+  if (data.sentences?.sentence) return [data.sentences];
+  return [];
+}
+
 function selfCheckSentenceText() {
   const sample = {
     sentence: '可以听到我说话吗？',
   };
   console.assert(sentenceText(sample) === '可以听到我说话吗？');
+  console.assert(sentenceItems({ sentences: sample }).length === 1);
 }
 
 if (import.meta.env.DEV) selfCheckSentenceText();
@@ -152,7 +159,7 @@ function upsertSentence(item: any, index: number, final: boolean) {
   if (!text) return;
 
   const speakerId = sentenceSpeaker(item);
-  const id = String(item.slice_id ?? item.index ?? item.start_time ?? `${speakerId}-${index}`);
+  const id = String(item.sentence_id ?? item.slice_id ?? item.index ?? item.start_time ?? `${speakerId}-${index}`);
   const next: Sentence = { id, speakerId, text, final };
   const currentIndex = sentences.value.findIndex((sentence) => sentence.id === id);
 
@@ -168,8 +175,8 @@ function handleAsrMessage(data: any) {
     throw new Error(`ASR ${data.code}: ${data.message || '识别失败'}`);
   }
 
-  const list = data.sentences?.sentence_list;
-  if (Array.isArray(list)) {
+  const list = sentenceItems(data);
+  if (list.length) {
     list.forEach((item, index) => upsertSentence(item, index, data.final === 1));
     liveText.value = list.map((item) => `${speakerLabel(sentenceSpeaker(item))}: ${sentenceText(item)}`).join('\n');
     return;
